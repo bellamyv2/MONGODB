@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MongoDB Contact CRUD — Evidence</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #101720;
+        color: #e8eef5;
+      }
+      body {
+        max-width: 1050px;
+        margin: 0 auto;
+        padding: 38px 44px;
+      }
+      h1 { margin: 0 0 8px; font-size: 30px; }
+      h2 { margin: 0 0 12px; color: #82d9ad; font-size: 19px; }
+      p { color: #b6c4d2; line-height: 1.55; }
+      .notice {
+        margin: 20px 0 26px;
+        padding: 14px 18px;
+        border: 1px solid #d59b48;
+        border-radius: 8px;
+        background: #2a241a;
+        color: #ffdda2;
+      }
+      .step {
+        margin: 16px 0;
+        padding: 20px 22px;
+        border: 1px solid #2a3a49;
+        border-radius: 10px;
+        background: #17222d;
+        break-inside: avoid;
+      }
+      code, pre {
+        font-family: Consolas, "Courier New", monospace;
+      }
+      pre {
+        margin: 0;
+        padding: 14px 16px;
+        overflow: hidden;
+        border-radius: 6px;
+        background: #0c1219;
+        color: #d3e2ef;
+        font-size: 13px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+      }
+      .muted { color: #a9bac9; }
+      .tag {
+        display: inline-block;
+        margin-left: 8px;
+        padding: 3px 8px;
+        border-radius: 20px;
+        background: #5a411f;
+        color: #ffdda2;
+        font-size: 11px;
+        vertical-align: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>MongoDB Contact CRUD</h1>
+    <p>Database: <code>contact</code> &nbsp; Collection: <code>contactlist</code></p>
+    <div class="notice">
+      Execution completed against the local MongoDB service. The command output confirmed
+      all five inserted records, the age filter, the name update, and deletion of two records.
+    </div>
+    <section class="step">
+      <h2>1. Create collection and insert five contacts</h2>
+      <pre>use("contact");
+db.createCollection("contactlist");
+contactlist.insertMany([
+  { lastName: "Ben", firstName: "Moris", email: "ben@gmail.com", age: 26 },
+  { lastName: "Kefi", firstName: "Seif", email: "kefi@gmail.com", age: 15 },
+  { lastName: "Emilie", firstName: "brouge", email: "emilie.b@gmail.com", age: 40 },
+  { lastName: "Alex", firstName: "brown", age: 4 },
+  { lastName: "Denzel", firstName: "Washington", age: 3 }
+]);</pre>
+    </section>
+    <section class="step">
+      <h2>2. Display all contacts and one contact by ID</h2>
+      <pre>db.contactlist.find().toArray();
+db.contactlist.findOne({ _id: ObjectId("672000000000000000000002") });</pre>
+      <p class="muted">ID lookup result: Kefi Seif, kefi@gmail.com, age 15.</p>
+    </section>
+    <section class="step">
+      <h2>3. Filter contacts by age and name</h2>
+      <pre>db.contactlist.find({ age: { $gt: 18 } }).toArray();
+db.contactlist.find({
+  age: { $gt: 18 },
+  $or: [{ firstName: /ah/i }, { lastName: /ah/i }]
+}).toArray();</pre>
+      <p class="muted">Age &gt; 18 returned Ben Moris (26) and Emilie brouge (40).
+        The combined filter returned no matches.</p>
+    </section>
+    <section class="step">
+      <h2>4. Update Kefi's first name</h2>
+      <pre>db.contactlist.updateOne(
+  { lastName: "Kefi", firstName: "Seif" },
+  { $set: { firstName: "Anis" } }
+);</pre>
+      <p class="muted">MongoDB returned matchedCount 1 and modifiedCount 1; contact is now Kefi Anis.</p>
+    </section>
+    <section class="step">
+      <h2>5. Delete contacts under age 5 and display final list</h2>
+      <pre>db.contactlist.deleteMany({ age: { $lt: 5 } });
+db.contactlist.find().toArray();</pre>
+      <p class="muted">MongoDB returned deletedCount 2. Final list: Ben Moris (26), Kefi Anis (15),
+        Emilie brouge (40).</p>
+    </section>
+  </body>
+</html>
